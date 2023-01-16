@@ -96,6 +96,10 @@ $programs = @{
     "wordpad"                      = "WORDPAD.EXE"
 }
 
+$directProgramPaths = @{
+    "Watchguard SSL VPN"           = "$(${Env:ProgramFiles(x86)})\WatchGuard\WatchGuard Mobile VPN with SSL\wgsslvpnc.exe"
+}
+
 $LogFileName = [string]::Format("ShortcutRepairs{0}.log", (Get-Random -Minimum 0 -Maximum 99))
 $LogFilePath = "$env:temp\$LogFileName";
 
@@ -668,6 +672,46 @@ if ($VssRecovery) {
     }
 }
 
+Function LookupDirectProgramPathsFixLnks($programslist)
+{
+	$success = 0
+    $failures = 0
+    $programslist.GetEnumerator() | ForEach-Object {
+        $programpath = "$($_.Value)" 
+        try {
+            $target = $null
+            try { $target = Test-Path -Path $programpath -PathType Leaf -ErrorAction SilentlyContinue } catch {}
+
+            if ($null -ne $target) {
+                if (-not (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\$($_.Key).lnk")) {
+                    LogAndConsole ("`tShortcut for {0} not found in \Start Menu\, creating it now." -f $_.Key)
+                    $target = $target.Trim("`"")
+                    $shortcut_path = "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\$($_.Key).lnk"
+                    $description = $_.Key
+                    $workingdirectory = (Get-ChildItem $target).DirectoryName
+                    $WshShell = New-Object -ComObject WScript.Shell
+                    $Shortcut = $WshShell.CreateShortcut($shortcut_path)
+                    $Shortcut.TargetPath = $target
+                    $Shortcut.Description = $description
+                    $shortcut.WorkingDirectory = $workingdirectory
+                    $Shortcut.Save()
+                    Start-Sleep -Seconds 1			# Let the LNK file be backed to disk
+                    if ($Verbose -gt 2) {
+                        LogAndConsole "`tCopying ACL from owning folder"
+                    }
+                    CopyAclFromOwningDir $shortcut_path $False
+                    $success += 1
+                }
+            }
+        }
+        catch {
+            $failures += 1
+            LogErrorAndConsole "Exception: $_"
+            }
+    }
+return $success, $failures	
+}
+
 # Check for shortcuts in Start Menu, if program is available and the shortcut isn't... Then recreate the shortcut
 LogAndConsole "[+] Enumerating installed software under HKLM"
 $hklm_apps_success, $hklm_apps_failures = LookupHKLMAppsFixLnks($programs)
@@ -676,6 +720,10 @@ LogAndConsole "`tFinished with $hklm_apps_failures failures and $hklm_apps_succe
 LogAndConsole "[+] Enumerating installed software under HKU"
 $hku_apps_success, $hku_apps_failures = LookupHKUAppsFixLnks($programs)
 LogAndConsole "`tFinished with $hku_apps_failures failures and $hku_apps_success successes in fixing User level app links"
+
+LogAndConsole "[+] Enumerating installed software using direct program paths"
+$directprogrampaths_apps_success, $directprogrampaths_apps_failures = LookupDirectProgramPathsFixLnks($directProgramPaths)
+LogAndConsole "`tFinished with $directprogrampaths_apps_failures failures and $directprogrampaths_apps_success successes in fixing User level app links"
 
 #Saving the result
 SaveResult -Succeeded -NumLinksFound $VssRecoveredLnks -HKLMAppsSuccess $hklm_apps_success -HKLMAppsFailure $hklm_apps_failures -HKUAppsSuccess $hku_apps_success -HKUAppsFailure $hku_apps_failure
