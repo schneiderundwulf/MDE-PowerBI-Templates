@@ -144,6 +144,8 @@ Function SaveResult() {
         [parameter(ParameterSetName = "Failure")][switch][Alias("Failed")]$script_failed=$false,
         [parameter(ParameterSetName = "Failure")][string][Alias("ScriptError")]$script_error="Generic Error",
         [parameter(ParameterSetName = "Failure")][parameter(ParameterSetName = "Success")][int32][Alias("NumLinksFound")]$links_found=0,
+        [parameter(ParameterSetName = "Failure")][parameter(ParameterSetName = "Success")][int32][Alias("DirectProgramPathsAppsSuccess")]$directprogrampaths_success=0,
+        [parameter(ParameterSetName = "Failure")][parameter(ParameterSetName = "Success")][int32][Alias("DirectProgramPathsAppsFailure")]$directprogrampaths_failure=0,
         [parameter(ParameterSetName = "Failure")][parameter(ParameterSetName = "Success")][int32][Alias("HKUAppsSuccess")]$hku_success=0,
         [parameter(ParameterSetName = "Failure")][parameter(ParameterSetName = "Success")][int32][Alias("HKUAppsFailure")]$hku_failure=0,
         [parameter(ParameterSetName = "Failure")][parameter(ParameterSetName = "Success")][int32][Alias("HKLMAppsSuccess")]$hklm_success=0,
@@ -190,6 +192,8 @@ Function SaveResult() {
         New-ItemProperty -Path $registry_full_path -Name ScriptResult -Value $script_result -Force -PropertyType DWORD | Out-Null
         New-ItemProperty -Path $registry_full_path -Name Timestamp -Value $timestamp -Force | Out-Null
         New-ItemProperty -Path $registry_full_path -Name NumLinksFound -Value $links_found -PropertyType DWORD -Force | Out-Null
+        New-ItemProperty -Path $registry_full_path -Name HKUAppSuccess -Value $directprogrampaths_success -PropertyType DWORD -Force | Out-Null
+        New-ItemProperty -Path $registry_full_path -Name HKUAppFailure -Value $directprogrampaths_failure -PropertyType DWORD -Force | Out-Null
         New-ItemProperty -Path $registry_full_path -Name HKUAppSuccess -Value $hku_success -PropertyType DWORD -Force | Out-Null
         New-ItemProperty -Path $registry_full_path -Name HKUAppFailure -Value $hku_failure -PropertyType DWORD -Force | Out-Null
         New-ItemProperty -Path $registry_full_path -Name HKLMSuccess -Value $hklm_success -PropertyType DWORD -Force | Out-Null
@@ -197,7 +201,7 @@ Function SaveResult() {
         New-ItemProperty -Path $registry_full_path -Name ScriptError -Value $script_error -Force | Out-Null
 
         if ($Verbose -ge 1) {
-            LogAndConsole "Saved Result:  ScriptResult=$result ($script_result), TimeStamp=$timestamp, NumLinksFound=$links_found, HKUAppSuccess=$hku_success, HKUAppFailure=$hku_failure,  HKLMSuccess=$hklm_success, HKLMFailure=$hklm_failure,  ScriptError=$script_error in registry $registry_full_path"
+            LogAndConsole "Saved Result:  ScriptResult=$result ($script_result), TimeStamp=$timestamp, NumLinksFound=$links_found, DirectProgramPathsAppSuccess=$directprogrampaths_success, DirectProgramPathsAppFailure=$directprogrampaths_failure, HKUAppSuccess=$hku_success, HKUAppFailure=$hku_failure,  HKLMSuccess=$hklm_success, HKLMFailure=$hklm_failure,  ScriptError=$script_error in registry $registry_full_path"
         }
     }  
 }
@@ -677,12 +681,12 @@ Function LookupDirectProgramPathsFixLnks($programslist)
 	$success = 0
     $failures = 0
     $programslist.GetEnumerator() | ForEach-Object {
-        $programpath = "$($_.Value)" 
+        $target = "$($_.Value)" 
         try {
-            $target = $null
-            try { $target = Test-Path -Path $programpath -PathType Leaf -ErrorAction SilentlyContinue } catch {}
+            $testpath = $null
+            try { $testpath = Test-Path -Path $target -PathType Leaf -ErrorAction SilentlyContinue } catch {}
 
-            if ($null -ne $target) {
+            if ($null -ne $testpath) {
                 if (-not (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\$($_.Key).lnk")) {
                     LogAndConsole ("`tShortcut for {0} not found in \Start Menu\, creating it now." -f $_.Key)
                     $target = $target.Trim("`"")
@@ -691,15 +695,15 @@ Function LookupDirectProgramPathsFixLnks($programslist)
                     $workingdirectory = (Get-ChildItem $target).DirectoryName
                     $WshShell = New-Object -ComObject WScript.Shell
                     $Shortcut = $WshShell.CreateShortcut($shortcut_path)
-                    $Shortcut.TargetPath = $target
+                    $Shortcut.TargetPath = "$target"
                     $Shortcut.Description = $description
-                    $shortcut.WorkingDirectory = $workingdirectory
+                    $shortcut.WorkingDirectory = "$workingdirectory"
                     $Shortcut.Save()
                     Start-Sleep -Seconds 1			# Let the LNK file be backed to disk
                     if ($Verbose -gt 2) {
                         LogAndConsole "`tCopying ACL from owning folder"
                     }
-                    CopyAclFromOwningDir $shortcut_path $False
+                    CopyAclFromOwningDir $shortcut_path $True
                     $success += 1
                 }
             }
@@ -726,5 +730,5 @@ $directprogrampaths_apps_success, $directprogrampaths_apps_failures = LookupDire
 LogAndConsole "`tFinished with $directprogrampaths_apps_failures failures and $directprogrampaths_apps_success successes in fixing User level app links"
 
 #Saving the result
-SaveResult -Succeeded -NumLinksFound $VssRecoveredLnks -HKLMAppsSuccess $hklm_apps_success -HKLMAppsFailure $hklm_apps_failures -HKUAppsSuccess $hku_apps_success -HKUAppsFailure $hku_apps_failure
+SaveResult -Succeeded -NumLinksFound $VssRecoveredLnks -HKLMAppsSuccess $hklm_apps_success -HKLMAppsFailure $hklm_apps_failures -HKUAppsSuccess $hku_apps_success -HKUAppsFailure $hku_apps_failure -DirectProgramPathsAppsSuccess $directprogrampaths_apps_success -DirectProgramPathsAppsFailure $directprogrampaths_apps_failures 
 
