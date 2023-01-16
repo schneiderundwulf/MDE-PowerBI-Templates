@@ -52,49 +52,89 @@ param ([bool] $Telemetry=$true, [bool] $ForceRepair=$true, [switch] $VssRecovery
 $ScriptVersionStr = "v1.1"
 
 $programs = @{
-    "Adobe Acrobat"                = "Acrobat.exe"
-    "Adobe Photoshop 2023"         = "photoshop.exe"
-    "Adobe Illustrator 2023"       = "illustrator.exe"
-    "Adobe Creative Cloud"         = "Creative Cloud.exe"
-    "Adobe Substance 3D Painter"   = "Adobe Substance 3D Painter.exe"
-    "Firefox Private Browsing"     = "private_browsing.exe"
-    "Firefox"                      = "firefox.exe"
-    "Google Chrome"                = "chrome.exe"
-    "Microsoft Edge"               = "msedge.exe"
-    "Notepad++"                    = "notepad++.exe"
-    "Parallels Client"             = "APPServerClient.exe"
-    "Remote Desktop"               = "msrdcw.exe"
-    "TeamViewer"                   = "TeamViewer.exe"
-    "Royal TS6"                    = "royalts.exe"
-    "Elgato StreamDeck"            = "StreamDeck.exe"
-    "Visual Studio 2022"           = "devenv.exe"
-    "Visual Studio Code"           = "code.exe"
-    "Camtasia Studio"              = "CamtasiaStudio.exe"
-    "Camtasia Recorder"            = "CamtasiaRecorder.exe"
-    "Jabra Direct"                 = "jabra-direct.exe"
-    "7-Zip File Manager"           = "7zFM.exe"
-    "Access"                       = "MSACCESS.EXE"
-    "Excel"                        = "EXCEL.EXE"
-    "OneDrive"                     = "onedrive.exe"
-    "OneNote"                      = "ONENOTE.EXE"
-    "Outlook"                      = "OUTLOOK.EXE"
-    "PowerPoint"                   = "POWERPNT.EXE"
-    "Project"                      = "WINPROJ.EXE"
-    "Publisher"                    = "MSPUB.EXE"
-    "Visio"                        = "VISIO.EXE"
-    "Word"                         = "WINWORD.exe"
-    "PowerShell 7 (x64)"           = "pwsh.exe"
-    "SQL Server Management Studio" = "ssms.exe"
-    "Azure Data Studio"            = "azuredatastudio.exe"
-    "Zoom"                         = "zoom.exe"
-    "Internet Explorer"            = "IEXPLORE.EXE"
-    "Skype for Business"           = "Skype.exe"
-    "VLC Player"                   = "vlc.exe"   
-    "Cisco Jabber"                 = "CiscoJabber.exe"
-    "Microsoft Teams"              = "msteams.exe"
-    "PuTTY"                        = "putty.exe"
-    "wordpad"                      = "WORDPAD.EXE"
-    "Watchguard SSL VPN"           = "$(${Env:ProgramFiles(x86)})\WatchGuard\WatchGuard Mobile VPN with SSL\wgsslvpnc.exe"
+    "Adobe Acrobat"                           = "%programfiles%\Adobe\Acrobat DC\Acrobat\Acrobat.exe"
+    "Adobe Acrobat Reader DC (32 Bit)"        = "%programfiles%\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"
+    "Adobe Photoshop 2023"                    = "photoshop.exe"
+    "Adobe Illustrator 2023"                  = "illustrator.exe"
+    "Adobe Creative Cloud"                    = "%programfiles%\Adobe\Adobe Creative Cloud\ACC\Creative Cloud.exe"
+    "Adobe Substance 3D Painter"              = "Adobe Substance 3D Painter.exe"
+    "Firefox Private Browsing"                = "private_browsing.exe"
+    "Firefox"                                 = "%programfiles%\Mozilla Firefox\firefox.exe"
+    "Google Chrome"                           = "%programfiles%\Google\Chrome\Application\chrome.exe"
+    "Microsoft Edge"                          = "msedge.exe"
+    "Notepad++"                               = "%programfiles%\Notepad++\notepad++.exe"
+    "Parallels Client"                        = "APPServerClient.exe"
+    "Remote Desktop"                          = "msrdcw.exe"
+    "TeamViewer"                              = "%programfiles%\TeamViewer\TeamViewer.exe"
+    "Royal TS6"                               = "royalts.exe"
+    "Elgato StreamDeck"                       = "StreamDeck.exe"
+    "Visual Studio 2022"                      = "devenv.exe"
+    "Visual Studio Code"                      = "code.exe"
+    "Camtasia Studio"                         = "CamtasiaStudio.exe"
+    "Camtasia Recorder"                       = "CamtasiaRecorder.exe"
+    "Jabra Direct"                            = "jabra-direct.exe"
+    "7-Zip File Manager"                      = "7zFM.exe"
+    "Access"                                  = "MSACCESS.EXE"
+    "Excel"                                   = "EXCEL.EXE"
+    "OneDrive"                                = "onedrive.exe"
+    "OneNote"                                 = "ONENOTE.EXE"
+    "Outlook"                                 = "OUTLOOK.EXE"
+    "PowerPoint"                              = "POWERPNT.EXE"
+    "Project"                                 = "WINPROJ.EXE"
+    "Publisher"                               = "MSPUB.EXE"
+    "Visio"                                   = "VISIO.EXE"
+    "Word"                                    = "WINWORD.exe"
+    "PowerShell 7 (x64)"                      = "pwsh.exe"
+    "SQL Server Management Studio"            = "ssms.exe"
+    "Azure Data Studio"                       = "azuredatastudio.exe"
+    "Zoom"                                    = "%programfiles%\Zoom\bin\zoom.exe"
+    "Internet Explorer"                       = "IEXPLORE.EXE"
+    "Skype for Business"                      = "Skype.exe"
+    "VLC Player"                              = "vlc.exe"   
+    "Cisco Jabber"                            = "CiscoJabber.exe"
+    "Microsoft Teams"                         = "msteams.exe"
+    "PuTTY"                                   = "%programfiles%\PuTTY\putty.exe"
+    "wordpad"                                 = "WORDPAD.EXE"
+    "Watchguard SSL VPN"                      = "%programfiles%\WatchGuard\WatchGuard Mobile VPN with SSL\wgsslvpnc.exe"
+    "Teamspeak 3"                             = "%programfiles%\TeamSpeak 3 Client\ts3client_win64.exe"
+    "c-entron.NET"                            = "%programfiles%\c-entron software gmbh\c-entron 2.0\c-entron 2.0.exe"
+    "ELO Java Client"                         = "%programfiles%\ELO Java Client\ELOclient.exe"
+    "SFirm 4.0"                               = "%programfiles%\SFirmV4\SFirm.exe"
+    "Docusnap 12"                             = "%programfiles%\Docusnap 12\Docusnap.exe"
+    "Remote Desktop Manager"                  = "%programfiles%\Devolutions\Remote Desktop Manager\RemoteDesktopManager.exe"
+    "FileZilla"                               = "%programfiles%\FileZilla FTP Client\filezilla.exe"
+    "XMind ZEN"                               = "%programfiles%\XMind ZEN\XMind ZEN.exe"
+    "WinSCP"                                  = "%programfiles%\WinSCP\WinSCP.exe"
+    "CitrixWorkspace"                         = "%programfiles%\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"
+    "TreeSizeFree"                            = "%programfiles%\JAM Software\TreeSize Free\TreeSizeFree.exe"
+    "VPN Any Connect"                         = "%programfiles%\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"
+    "VPN Access Manager"                      = "%programfiles%\ShrewSoft\VPN Client\ipseca.exe"
+    "OpenVPN GUI"                             = "%programfiles%\OpenVPN\bin\openvpn-gui.exe"
+    "Sophos SSL VPN Client"                   = "%programfiles%\Sophos\Sophos SSL VPN Client\bin\openvpn-gui.exe"
+    "FortiClient VPN"                         = "%programfiles%\Fortinet\FortiClient\FortiClient.exe"
+    "Cisco AnyConnect Secure Mobility Client" = "%programfiles%\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"
+    "Dell SonicWALL NetExtender"              = "%programfiles%\SonicWALL\SSL-VPN\NetExtender\NEGui.exe"
+    "Advanced Monitoring Agent"               = "%programfiles%\Advanced Monitoring Agent\winagent.exe"
+    "draw.io"                                 = "%programfiles%\draw.io\draw.io.exe"
+    "KeePass for Pleasant Password Server"    = "%programfiles%\Pleasant Solutions\KeePass for Pleasant Password Server\KeePass.exe"
+    "Greenshot"                               = "%programfiles%\Greenshot\Greenshot.exe"
+    "VLC"                                     = "%programfiles%\VideoLAN\VLC\vlc.exe"
+    "XPhone Connect Client"                   = "%programfiles%\C4B\XPhone Connect Client\C4B.XPhone.Commander.exe"
+    "Adobe Animate 2021"                      = "%programfiles%\Adobe\Adobe Animate 2021\Animate.exe"
+    "Adobe Audition 2021"                     = "%programfiles%\Adobe\Adobe Audition 2021\Adobe Audition.exe"
+    "Adobe Bridge CC 2018"                    = "%programfiles%\Adobe\Adobe Bridge CC 2018\Bridge.exe"
+    "Adobe Dreamweaver 2021"                  = "%programfiles%\Adobe\Adobe Dreamweaver 2021\Dreamweaver.exe"
+    "Adobe Illustrator 2021"                  = "Illustrator.exe"
+    "Adobe InCopy 2021"                       = "%programfiles%\Adobe\Adobe InCopy 2021\InCopy.exe"
+    "Adobe InDesign 2021"                     = "%programfiles%\Adobe\Adobe InDesign 2021\InDesign.exe"
+    "Adobe Lightroom Classic"                 = "%programfiles%\Adobe\Adobe Lightroom Classic\Lightroom.exe"
+    "Adobe Lightroom CC"                      = "%programfiles%\Adobe\Adobe Lightroom CC\lightroom.exe"
+    "ADobe Media Encoder 2021"                = "%programfiles%\Adobe\Adobe Media Encoder 2021\Adobe Media Encoder.exe"
+    "Adobe Photoshop 2021"                    = "%programfiles%\Adobe\Adobe Photoshop 2021\Photoshop.exe"
+    "Adobe Prelude 2021"                      = "%programfiles%\Adobe\Adobe Prelude 2021\Adobe Prelude.exe"
+    "Adobe Premiere Pro 2021"                 = "%programfiles%\Adobe\Adobe Premiere Pro 2021\Adobe Premiere Pro.exe"
+    "SwyxIt!"                                 = "%programfiles%\SwyxIt!\SwyxIt!.exe"
+    "IrfanView"                               = "%programfiles%\IrfanView\i_view32.exe"
 }
 
 $LogFileName = [string]::Format("ShortcutRepairs{0}.log", (Get-Random -Minimum 0 -Maximum 99))
@@ -680,15 +720,28 @@ Function LookupDirectProgramPathsFixLnks($programslist)
 	$success = 0
     $failures = 0
     $programslist.GetEnumerator() | ForEach-Object {
-        $target = "$($_.Value)" 
         try {
             $testpath = $null 
             $folder = $null 
-            try { $testpath = Test-Path -Path $target -PathType Leaf -ErrorAction SilentlyContinue } catch {}
+            try { 
+                if($_.Value -like "%programfiles%*") {
+                    $64path = $_.Value -replace '%programfiles%', "$(${Env:ProgramFiles})"
+                    $86path = $_.Value -replace '%programfiles%', "$(${Env:ProgramFiles(x86)})"
+                    $target = $64path 
+                    $testpath = Test-Path -Path $target -PathType Leaf -ErrorAction SilentlyContinue 
+                    if($null -ne $testpath) {
+                        $target = $86path 
+                        $testpath = Test-Path -Path $target -PathType Leaf -ErrorAction SilentlyContinue 
+                    }
+                } else {
+                    $target = "$($_.Value)" 
+                    $testpath = Test-Path -Path $target -PathType Leaf -ErrorAction SilentlyContinue
+                }
+            } catch {}
 
             try { $folder = Split-Path $target -ErrorAction SilentlyContinue } catch {} 
 
-            if ($null -ne $folder -and $null -ne $testpath) {
+            if ($null -ne $folder -and $testpath) {
                 if (-not (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\$($_.Key).lnk")) {
                     LogAndConsole ("`tShortcut for {0} not found in \Start Menu\, creating it now." -f $_.Key)
                     $target = $target.Trim("`"")
@@ -728,8 +781,8 @@ $hku_apps_success, $hku_apps_failures = LookupHKUAppsFixLnks($programs)
 LogAndConsole "`tFinished with $hku_apps_failures failures and $hku_apps_success successes in fixing User level app links"
 
 LogAndConsole "[+] Enumerating installed software using direct program paths"
-$directprogrampaths_apps_success, $directprogrampaths_apps_failures = LookupDirectProgramPathsFixLnks($directProgramPaths)
-LogAndConsole "`tFinished with $directprogrampaths_apps_failures failures and $directprogrampaths_apps_success successes in fixing User level app links"
+$directprogrampaths_apps_success, $directprogrampaths_apps_failures = LookupDirectProgramPathsFixLnks($programs)
+LogAndConsole "`tFinished with $directprogrampaths_apps_failures failures and $directprogrampaths_apps_success successes in fixing Machine level app links using direct program paths"
 
 #Saving the result
 SaveResult -Succeeded -NumLinksFound $VssRecoveredLnks -HKLMAppsSuccess $hklm_apps_success -HKLMAppsFailure $hklm_apps_failures -HKUAppsSuccess $hku_apps_success -HKUAppsFailure $hku_apps_failure -DirectProgramPathsAppsSuccess $directprogrampaths_apps_success -DirectProgramPathsAppsFailure $directprogrampaths_apps_failures 
