@@ -47,7 +47,7 @@ Param Verbose:
 
 #>
 
-param ([bool] $Telemetry=$true, [switch] $ForceRepair=$false, [switch] $VssRecovery=$false, [int] $Verbose=1)
+param ([bool] $Telemetry=$true, [bool] $ForceRepair=$true, [switch] $VssRecovery=$false, [int] $Verbose=3)
 
 $ScriptVersionStr = "v1.1"
 
@@ -94,9 +94,6 @@ $programs = @{
     "Microsoft Teams"              = "msteams.exe"
     "PuTTY"                        = "putty.exe"
     "wordpad"                      = "WORDPAD.EXE"
-}
-
-$directProgramPaths = @{
     "Watchguard SSL VPN"           = "$(${Env:ProgramFiles(x86)})\WatchGuard\WatchGuard Mobile VPN with SSL\wgsslvpnc.exe"
 }
 
@@ -192,8 +189,8 @@ Function SaveResult() {
         New-ItemProperty -Path $registry_full_path -Name ScriptResult -Value $script_result -Force -PropertyType DWORD | Out-Null
         New-ItemProperty -Path $registry_full_path -Name Timestamp -Value $timestamp -Force | Out-Null
         New-ItemProperty -Path $registry_full_path -Name NumLinksFound -Value $links_found -PropertyType DWORD -Force | Out-Null
-        New-ItemProperty -Path $registry_full_path -Name HKUAppSuccess -Value $directprogrampaths_success -PropertyType DWORD -Force | Out-Null
-        New-ItemProperty -Path $registry_full_path -Name HKUAppFailure -Value $directprogrampaths_failure -PropertyType DWORD -Force | Out-Null
+        New-ItemProperty -Path $registry_full_path -Name DirectProgramPathsAppSuccess -Value $directprogrampaths_success -PropertyType DWORD -Force | Out-Null
+        New-ItemProperty -Path $registry_full_path -Name DirectProgramPathsAppFailure -Value $directprogrampaths_failure -PropertyType DWORD -Force | Out-Null
         New-ItemProperty -Path $registry_full_path -Name HKUAppSuccess -Value $hku_success -PropertyType DWORD -Force | Out-Null
         New-ItemProperty -Path $registry_full_path -Name HKUAppFailure -Value $hku_failure -PropertyType DWORD -Force | Out-Null
         New-ItemProperty -Path $registry_full_path -Name HKLMSuccess -Value $hklm_success -PropertyType DWORD -Force | Out-Null
@@ -521,6 +518,7 @@ Function LookupHKLMAppsFixLnks($programslist)
     $success = 0
     $failures = 0
     $programslist.GetEnumerator() | ForEach-Object {
+        $_.Value = Split-Path $($_.Value) -leaf
         $reg_path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$($_.Value)"
         try {
             $apppath = $null
@@ -549,9 +547,9 @@ Function LookupHKLMAppsFixLnks($programslist)
                     $workingdirectory = (Get-ChildItem $target).DirectoryName
                     $WshShell = New-Object -ComObject WScript.Shell
                     $Shortcut = $WshShell.CreateShortcut($shortcut_path)
-                    $Shortcut.TargetPath = $target
+                    $Shortcut.TargetPath = "$target"
                     $Shortcut.Description = $description
-                    $shortcut.WorkingDirectory = $workingdirectory
+                    $shortcut.WorkingDirectory = "$workingdirectory"
                     $Shortcut.Save()
                     Start-Sleep -Seconds 1			# Let the LNK file be backed to disk
                     if ($Verbose -gt 2) {
@@ -589,6 +587,7 @@ Function LookupHKUAppsFixLnks($programslist)
 	    ## Get the user profile path   
 	    $profile_path = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$sid_string" -Name "ProfileImagePath").ProfileImagePath
 	    $programslist.GetEnumerator() | ForEach-Object {
+        $_.Value = Split-Path $($_.Value) -leaf
 		$reg_path = "${user}\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\$($_.Value)"
 		try {
 			$apppath = $null
@@ -619,9 +618,9 @@ Function LookupHKUAppsFixLnks($programslist)
 					$workingdirectory = (Get-ChildItem $target).DirectoryName
 					$WshShell = New-Object -ComObject WScript.Shell
 					$Shortcut = $WshShell.CreateShortcut($shortcut_path)
-					$Shortcut.TargetPath = $target
+					$Shortcut.TargetPath = "$target"
 					$Shortcut.Description = $description
-					$shortcut.WorkingDirectory = $workingdirectory
+					$shortcut.WorkingDirectory = "$workingdirectory"
 					$Shortcut.Save()
 					Start-Sleep -Seconds 1			# Let the LNK file be backed to disk
                     if ($Verbose -gt 2) {
@@ -683,10 +682,13 @@ Function LookupDirectProgramPathsFixLnks($programslist)
     $programslist.GetEnumerator() | ForEach-Object {
         $target = "$($_.Value)" 
         try {
-            $testpath = $null
+            $testpath = $null 
+            $folder = $null 
             try { $testpath = Test-Path -Path $target -PathType Leaf -ErrorAction SilentlyContinue } catch {}
 
-            if ($null -ne $testpath) {
+            try { $folder = Split-Path $target -ErrorAction SilentlyContinue } catch {} 
+
+            if ($null -ne $folder -and $null -ne $testpath) {
                 if (-not (Test-Path -Path "$env:PROGRAMDATA\Microsoft\Windows\Start Menu\Programs\$($_.Key).lnk")) {
                     LogAndConsole ("`tShortcut for {0} not found in \Start Menu\, creating it now." -f $_.Key)
                     $target = $target.Trim("`"")
